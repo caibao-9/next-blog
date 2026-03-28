@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js 博客系统
 
-## Getting Started
+一个基于 Next.js + Prisma + MySQL 的极简博客系统。
 
-First, run the development server:
+## 功能特性
+
+- ✅ 文章列表展示
+- ✅ Markdown 渲染
+- ✅ 文章阅读量统计
+- ✅ 管理后台（增删改查）
+- ✅ 简单的密码保护
+- ✅ 响应式设计
+
+## 快速开始
+
+### 本地开发
 
 ```bash
+# 安装依赖
+npm install
+
+# 配置数据库
+# 编辑 .env 文件，设置 DATABASE_URL
+
+# 执行数据库迁移
+npx prisma migrate deploy
+
+# 启动开发服务器
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+访问 http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 默认账号
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- 管理后台密码：`your-secret-password-123`（在 .env 中修改）
 
-## Learn More
+## 项目结构
 
-To learn more about Next.js, take a look at the following resources:
+```
+├── prisma/
+│   └── schema.prisma      # 数据库模型
+├── src/
+│   ├── app/               # 页面路由
+│   │   ├── page.tsx       # 首页（文章列表）
+│   │   ├── blog/[slug]/   # 文章详情页
+│   │   ├── admin/         # 管理后台
+│   │   └── api/           # API 接口
+│   └── lib/
+│       └── prisma.ts      # 数据库客户端
+└── DEPLOY.md              # 部署指南
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 部署
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+详见 [DEPLOY.md](./DEPLOY.md)
 
-## Deploy on Vercel
+推荐部署到 Vercel + PlanetScale（免费方案）
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 技术栈
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **框架**: Next.js 15 (App Router)
+- **语言**: TypeScript
+- **样式**: Tailwind CSS
+- **数据库**: MySQL + Prisma
+- **Markdown**: react-markdown
+
+## License
+
+MIT
