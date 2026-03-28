@@ -15,16 +15,20 @@ function EditPostForm() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [hasStoredPassword, setHasStoredPassword] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    const savedPassword = localStorage.getItem('adminPassword')
-    if (savedPassword) {
-      setPassword(savedPassword)
-    }
-    
-    if (slug) {
-      fetchPost(savedPassword || '')
+    if (typeof window !== 'undefined') {
+      const savedPassword = localStorage.getItem('adminPassword')
+      if (savedPassword) {
+        setPassword(savedPassword)
+        setHasStoredPassword(true)
+      }
+      
+      if (slug) {
+        fetchPost(savedPassword || '')
+      }
     }
   }, [slug])
 
@@ -106,7 +110,7 @@ function EditPostForm() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <form className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
           {/* Password */}
-          {!localStorage.getItem('adminPassword') && (
+          {!hasStoredPassword && (
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 管理员密码
