@@ -1,143 +1,156 @@
 # 部署指南
 
-## 方案一：部署到 Vercel（推荐，免费）
+## Supabase + Vercel（完全免费方案，推荐！）
 
-### 1. 准备代码
+### 第一步：创建 Supabase 项目
 
-```bash
-# 确保代码已提交到 Git
-git add .
-git commit -m "init blog"
+1. 访问 https://supabase.com
+2. 用 GitHub 账号登录
+3. 点击 "New Project"
+4. 填写信息：
+   - **Name**: my-blog (或其他名字)
+   - **Database Password**: 设置一个强密码（保存好！）
+   - **Region**: 选 Asia (Singapore) 或 Asia (Tokyo) 离中国近
+5. 等待项目创建完成（约 1-2 分钟）
+
+### 第二步：获取数据库连接字符串
+
+1. 进入项目后，点击左侧 **Project Settings** (齿轮图标)
+2. 点击 **Database** 标签
+3. 找到 **Connection string** 部分
+4. 选择 **URI** 格式
+5. 复制连接字符串，把 `[YOUR-PASSWORD]` 换成你的实际密码
+
+格式像这样：
+```
+postgresql://postgres:your-password@db.xxxxxxxxx.supabase.co:5432/postgres
 ```
 
-### 2. 创建 Vercel 账号
+### 第三步：执行数据库迁移
+
+在本地终端运行：
+
+```bash
+# 用 Supabase 的连接字符串执行迁移
+DATABASE_URL="postgresql://postgres:你的密码@db.xxx.supabase.co:5432/postgres" npx prisma migrate deploy
+
+# 然后重新生成 Prisma Client
+DATABASE_URL="postgresql://postgres:你的密码@db.xxx.supabase.co:5432/postgres" npx prisma generate
+```
+
+看到成功消息就可以了。
+
+### 第四步：部署到 Vercel
 
 1. 访问 https://vercel.com
-2. 用 GitHub 账号登录
-3. 点击 "Add New Project"
-4. 导入你的 Git 仓库
-
-### 3. 配置环境变量
-
-在 Vercel 项目设置中，添加以下环境变量：
+2. 用 GitHub 登录
+3. 点击 **"Add New Project"**
+4. 导入你的 GitHub 仓库
+5. 在 **Environment Variables** 中添加：
 
 | 名称 | 值 |
 |------|-----|
-| `DATABASE_URL` | 你的 MySQL 数据库连接地址 |
-| `ADMIN_PASSWORD` | 管理员密码 |
+| `DATABASE_URL` | `postgresql://postgres:你的密码@db.xxx.supabase.co:5432/postgres` |
+| `ADMIN_PASSWORD` | 你的管理员密码（比如 my-secret-123）|
 
-### 4. 数据库准备
+6. 点击 **Deploy**
+7. 等待部署完成（约 2-3 分钟）
 
-Vercel 只部署前端，**数据库需要自己准备**：
+### 第五步：访问你的博客
 
-**选项 A：PlanetScale（免费 MySQL，推荐）**
-1. 注册 https://planetscale.com
-2. 创建数据库
-3. 获取连接字符串
-4. 格式：`mysql://username:password@host/database?sslaccept=strict`
+Vercel 会给你分配一个域名，比如：
+```
+https://next-demo-xxx.vercel.app
+```
 
-**选项 B：阿里云/腾讯云 RDS**
-- 购买 MySQL 实例
-- 开放外网访问
-- 创建数据库和用户
+打开这个链接，应该能看到博客首页了！
 
-**选项 C：本地数据库 + 内网穿透（测试用）**
-- 使用 ngrok 或花生壳暴露本地 MySQL
-- 不推荐生产环境使用
+---
 
-### 5. 部署命令
+## 使用你的博客
 
-Vercel 会自动检测 Next.js 项目，使用默认设置即可：
+### 管理后台
 
-- Build Command: `prisma generate && next build`
-- Output Directory: `.next`
+1. 访问 `https://你的域名/admin`
+2. 输入密码（就是 ADMIN_PASSWORD 设置的）
+3. 点击 **"写文章"**
+4. 填写：
+   - **标题**：文章标题
+   - **slug**：URL 标识（如 `hello-world`）
+   - **内容**：用 Markdown 写
+5. 点击 **发布文章**
 
-### 6. 数据库迁移
+### Markdown 支持
 
-部署后，在本地运行：
+写内容时支持：
+```markdown
+# 一级标题
+## 二级标题
 
-```bash
-# 使用生产数据库 URL 执行迁移
-DATABASE_URL="你的生产数据库URL" npx prisma migrate deploy
+**粗体** *斜体*
+
+- 列表项
+- 列表项
+
+1. 有序列表
+2. 有序列表
+
+\`\`\`javascript
+console.log('代码块')
+\`\`\`
+
+[链接](https://example.com)
 ```
 
 ---
 
-## 方案二：服务器部署（有自己的服务器）
+## 其他部署方案
 
-### 使用 PM2 部署
+### 自己的服务器
 
 ```bash
 # 服务器上安装依赖
 npm install
 
-# 生成 Prisma Client
-npx prisma generate
+# 设置环境变量
+export DATABASE_URL="postgresql://..."
+export ADMIN_PASSWORD="..."
 
-# 执行数据库迁移
+# 执行迁移
 npx prisma migrate deploy
 
 # 构建
 npm run build
 
-# 使用 PM2 启动
-npm install -g pm2
-pm2 start npm --name "blog" -- start
+# 启动
+npm start
 ```
 
-### 使用 Docker 部署
-
-创建 `Dockerfile`：
-
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npx prisma generate
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "start"]
-```
-
-构建并运行：
+### Docker 部署
 
 ```bash
+# 构建镜像
 docker build -t my-blog .
-docker run -p 3000:3000 -e DATABASE_URL="..." -e ADMIN_PASSWORD="..." my-blog
+
+# 运行
+docker run -p 3000:3000 \
+  -e DATABASE_URL="postgresql://..." \
+  -e ADMIN_PASSWORD="..." \
+  my-blog
 ```
 
 ---
-
-## 方案三：完全免费方案（适合测试）
-
-如果你不想买数据库，可以用：
-
-1. **前端**：Vercel（免费）
-2. **数据库**：Supabase PostgreSQL（免费额度足够）
-
-需要修改：
-1. 将 `schema.prisma` 的 `provider` 从 `mysql` 改为 `postgresql`
-2. 重新生成迁移
-3. 使用 Supabase 的连接字符串
-
----
-
-## 部署后验证
-
-1. 访问首页，确认显示正常
-2. 访问 `/admin`，用密码登录
-3. 创建一篇文章
-4. 确认文章能正常显示
 
 ## 常见问题
 
-**Q: 部署后 API 返回 500？**
-A: 检查环境变量是否正确设置，特别是 `DATABASE_URL`
+**Q: 部署后显示 "Internal Server Error"？**
+A: 检查 Vercel 的环境变量是否设置正确，特别是 DATABASE_URL
 
 **Q: 数据库连不上？**
-A: 确认数据库允许外网访问，防火墙已开放端口
+A: Supabase 默认会阻止某些 IP，检查 Supabase 的 Network Restrictions 设置
 
-**Q: 样式丢失？**
-A: 检查 `next.config.ts` 的 `output` 配置，Vercel 不需要设置 `output: 'export'`
+**Q: 如何绑定自己的域名？**
+A: Vercel 项目 → Settings → Domains → 添加域名
+
+**Q: Supabase 免费额度是多少？**
+A: 500MB 数据库，每月 5GB 流量，对于个人博客完全够用
