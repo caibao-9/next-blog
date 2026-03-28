@@ -4,11 +4,12 @@ import { prisma } from '@/lib/prisma'
 // GET /api/posts/[slug] - 获取单篇文章
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params
     const post = await prisma.post.update({
-      where: { slug: params.slug },
+      where: { slug },
       data: { views: { increment: 1 } },
     })
 
@@ -31,9 +32,10 @@ export async function GET(
 // PUT /api/posts/[slug] - 更新文章
 export async function PUT(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params
     const body = await request.json()
     const { title, content, excerpt, published, adminPassword } = body
 
@@ -45,7 +47,7 @@ export async function PUT(
     }
 
     const post = await prisma.post.update({
-      where: { slug: params.slug },
+      where: { slug },
       data: {
         title,
         content,
@@ -66,9 +68,10 @@ export async function PUT(
 // DELETE /api/posts/[slug] - 删除文章
 export async function DELETE(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params
     const { searchParams } = new URL(request.url)
     const adminPassword = searchParams.get('adminPassword')
 
@@ -80,7 +83,7 @@ export async function DELETE(
     }
 
     await prisma.post.delete({
-      where: { slug: params.slug },
+      where: { slug },
     })
 
     return NextResponse.json({ success: true })
